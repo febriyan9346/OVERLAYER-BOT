@@ -1,0 +1,6 @@
+# Fill in the recipient wallet addresses below (one address per line)
+# These addresses are used for the "send" task
+# Remove this comment lines before running the bot
+0xYOUR_RECIPIENT_ADDRESS_1
+0xYOUR_RECIPIENT_ADDRESS_2
+0xYOUR_RECIPIENT_ADDRESS_3
