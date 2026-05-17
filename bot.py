@@ -1141,10 +1141,12 @@ class OverlayerBot:
         )
 
     def run_cycling(self, w3, addr, pk, target):
+        # Website hanya menghitung: mint, stake, bridge.
+        # Unstake & redeem dijalankan untuk recycle token, TIDAK dihitung.
         usdt_c  = w3.eth.contract(address=USDT_CONTRACT,   abi=ERC20_ABI)
         tplus_c = w3.eth.contract(address=T_PLUS_CONTRACT, abi=ERC20_ABI)
 
-        tx_count = 0
+        tx_count = 0  # hanya mint + stake yang dihitung
         cycle    = 0
         errors   = 0
 
@@ -1154,7 +1156,7 @@ class OverlayerBot:
             tplus_bal = tplus_c.functions.balanceOf(addr).call()
 
             self.log(
-                f"[Transaction] Cycle #{cycle}  |  Tx: {tx_count}/{target}  |  "
+                f"[Transaction] Cycle #{cycle}  |  Valid Tx: {tx_count}/{target}  |  "
                 f"USDT: {usdt_bal/10**USDT_DECIMALS:.4f}  |  T+: {tplus_bal/10**TOKEN_DECIMALS:.6f}",
                 "CYCLE",
             )
@@ -1162,7 +1164,6 @@ class OverlayerBot:
             if usdt_bal < MINT_USDT_RAW and tplus_bal < MINT_TPLUS_RAW:
                 errors += 1
                 self.log(f"Insufficient balance (need >= 0.1 USDT or >= 0.1 T+)  [{errors}/10]", "WARNING")
-                # Coba auto-faucet sebelum menyerah
                 if errors == 1:
                     try:
                         self.faucet_mint(w3, addr, pk, USDT_CONTRACT,
@@ -1180,36 +1181,39 @@ class OverlayerBot:
                 continue
 
             try:
+                # Step 1: MINT - dihitung website
                 if usdt_bal >= MINT_USDT_RAW and tx_count < target:
                     h, blk, gas = self.do_mint_cycle(w3, addr, pk)
                     tx_count += 1; errors = 0
-                    self.log(f"Mint success!  Tx: {tx_count}/{target}  Block: {blk}  "
+                    self.log(f"[MINT] Valid Tx: {tx_count}/{target}  Block: {blk}  "
                              f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
                     self.random_delay(5, 12)
                     tplus_bal = tplus_c.functions.balanceOf(addr).call()
 
+                # Step 2: STAKE - dihitung website
                 if tplus_bal > 0 and tx_count < target:
                     h, blk, gas = self.do_stake_cycle(w3, addr, pk, tplus_bal)
                     tx_count += 1; errors = 0
-                    self.log(f"Stake success!  Tx: {tx_count}/{target}  Block: {blk}  "
+                    self.log(f"[STAKE] Valid Tx: {tx_count}/{target}  Block: {blk}  "
                              f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
                     self.random_delay(5, 12)
 
-                if tx_count < target:
-                    h, blk, gas = self.do_unstake_cycle(w3, addr, pk)
-                    if h:
-                        tx_count += 1; errors = 0
-                        self.log(f"Unstake success!  Tx: {tx_count}/{target}  Block: {blk}  "
-                                 f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
-                        self.random_delay(5, 12)
-                        tplus_bal = tplus_c.functions.balanceOf(addr).call()
+                # Step 3: UNSTAKE - recycle token, TIDAK dihitung website
+                h, blk, gas = self.do_unstake_cycle(w3, addr, pk)
+                if h:
+                    errors = 0
+                    self.log(f"[UNSTAKE] recycle  Block: {blk}  "
+                             f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "INFO")
+                    self.random_delay(5, 12)
+                    tplus_bal = tplus_c.functions.balanceOf(addr).call()
 
-                if tplus_bal > 0 and tx_count < target:
+                # Step 4: REDEEM - recycle token, TIDAK dihitung website
+                if tplus_bal > 0:
                     h, blk, gas = self.do_redeem_cycle(w3, addr, pk, tplus_bal)
                     if h:
-                        tx_count += 1; errors = 0
-                        self.log(f"Redeem success!  Tx: {tx_count}/{target}  Block: {blk}  "
-                                 f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
+                        errors = 0
+                        self.log(f"[REDEEM] recycle  Block: {blk}  "
+                                 f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "INFO")
                         self.random_delay(5, 12)
 
             except Exception as ex:
