@@ -1140,15 +1140,124 @@ class OverlayerBot:
             pk,
         )
 
-    def run_cycling(self, w3, addr, pk, target):
-        # Website hanya menghitung: mint, stake, bridge.
-        # Unstake & redeem dijalankan untuk recycle token, TIDAK dihitung.
+    def do_bridge_cycle(self, w3, addr, pk):
+        """Bridge 0.1 T+ dari ETH Sepolia ke Base Sepolia. Dihitung website."""
+        p          = PRODUCT_MAP["usdt"]
+        amount_wei = MINT_TPLUS_RAW  # 0.1 T+
+        wrap_c     = w3.eth.contract(address=p["wrap"], abi=ERC20_ABI)
+        if wrap_c.functions.balanceOf(addr).call() < amount_wei:
+            self.log("[BridgeCycle] T+ tidak cukup untuk bridge, skip.", "WARNING")
+            return None, None, None
+
+        self.log("Cycle Bridge  0.1 T+  ETH Sepolia → Base Sepolia", "INFO")
+        oft = w3.eth.contract(address=p["wrap"], abi=OFT_ABI)
+        try:
+            needs_approval = oft.functions.approvalRequired().call()
+        except Exception:
+            needs_approval = False
+        if needs_approval:
+            self.ensure_allowance(w3, p["wrap"], p["wrap"], addr, pk, amount_wei)
+
+        to_bytes32    = "0x" + "00" * 12 + addr[2:].lower()
+        min_amount    = int(amount_wei * 99 // 100)
+        extra_options = bytes.fromhex("00030100110100000000000000000000000000030d40")
+        send_param = {
+            "dstEid":       p["lz_eid_dst"],
+            "to":           to_bytes32,
+            "amountLD":     amount_wei,
+            "minAmountLD":  min_amount,
+            "extraOptions": extra_options,
+            "composeMsg":   b"",
+            "oftCmd":       b"",
+        }
+        try:
+            fee_result = oft.functions.quoteSend(send_param, False).call()
+            native_fee = int(fee_result[0] * 1.1)
+        except Exception as ex:
+            self.log(f"[BridgeCycle] quoteSend failed: {ex}  → Fallback 0.005 ETH", "WARNING")
+            native_fee = int(5e15)
+
+        nonce = w3.eth.get_transaction_count(addr)
+        gp    = int(w3.eth.gas_price * 1.2)
+        tx    = oft.functions.send(send_param, {"nativeFee": native_fee, "lzTokenFee": 0}, addr).build_transaction({
+            "from": addr, "nonce": nonce, "gasPrice": gp,
+            "chainId": CHAIN_ID, "value": native_fee,
+        })
+        try:
+            tx["gas"] = int(w3.eth.estimate_gas(tx) * 1.3)
+        except Exception:
+            tx["gas"] = 400_000
+        return self.send_tx(w3, tx, pk)
+
+    def do_bridge_back_cycle(self, w3_base, addr, pk):
+        """Bridge 0.1 T+ dari Base Sepolia kembali ke ETH Sepolia. Recycle."""
+        p              = PRODUCT_MAP["usdt"]
+        wrap_base_addr = p.get("wrap_base")
+        if not wrap_base_addr:
+            return None, None, None
+        amount_wei = MINT_TPLUS_RAW  # 0.1 T+
+        wrap_c     = w3_base.eth.contract(address=wrap_base_addr, abi=ERC20_ABI)
+        bal        = wrap_c.functions.balanceOf(addr).call()
+        if bal < amount_wei:
+            self.log(f"[BridgeBackCycle] T+ di Base Sepolia tidak cukup ({bal/10**18:.4f}), skip.", "WARNING")
+            return None, None, None
+
+        self.log("Cycle BridgeBack  0.1 T+  Base Sepolia → ETH Sepolia", "INFO")
+        oft        = w3_base.eth.contract(address=wrap_base_addr, abi=OFT_ABI)
+        to_bytes32    = "0x" + "00" * 12 + addr[2:].lower()
+        min_amount    = int(amount_wei * 99 // 100)
+        extra_options = bytes.fromhex("00030100110100000000000000000000000000030d40")
+        send_param = {
+            "dstEid":       LZ_EID_ETH_SEPOLIA,
+            "to":           to_bytes32,
+            "amountLD":     amount_wei,
+            "minAmountLD":  min_amount,
+            "extraOptions": extra_options,
+            "composeMsg":   b"",
+            "oftCmd":       b"",
+        }
+        try:
+            fee_result = oft.functions.quoteSend(send_param, False).call()
+            native_fee = int(fee_result[0] * 1.1)
+        except Exception as ex:
+            self.log(f"[BridgeBackCycle] quoteSend failed: {ex}  → Fallback 0.005 ETH", "WARNING")
+            native_fee = int(5e15)
+
+        nonce = w3_base.eth.get_transaction_count(addr)
+        gp    = int(w3_base.eth.gas_price * 1.2)
+        tx    = oft.functions.send(send_param, {"nativeFee": native_fee, "lzTokenFee": 0}, addr).build_transaction({
+            "from": addr, "nonce": nonce, "gasPrice": gp,
+            "chainId": CHAIN_ID_BASE_SEP, "value": native_fee,
+        })
+        try:
+            tx["gas"] = int(w3_base.eth.estimate_gas(tx) * 1.3)
+        except Exception:
+            tx["gas"] = 400_000
+        return self.send_tx(w3_base, tx, pk)
+
+    def run_cycling(self, w3, addr, pk, target, proxy=None):
+        """
+        Cycling untuk task: "Make at least N transactions (mint, stake, or bridge)"
+
+        TX yang DIHITUNG website:
+          - mint    (0.1 USDT → 0.1 T+)
+          - stake   (0.1 T+   → sT+)
+          - bridge  (0.1 T+   → Base Sepolia via OFT)
+
+        TX untuk RECYCLE (tidak dihitung, tapi wajib biar cycle bisa lanjut):
+          - unstake     (sT+ → T+)
+          - redeem      (T+  → USDT)
+          - bridge_back (T+ Base → ETH, opsional, butuh ETH di Base)
+
+        Per cycle: hingga 3 tx valid (mint + stake + bridge).
+        """
         usdt_c  = w3.eth.contract(address=USDT_CONTRACT,   abi=ERC20_ABI)
         tplus_c = w3.eth.contract(address=T_PLUS_CONTRACT, abi=ERC20_ABI)
 
-        tx_count = 0  # hanya mint + stake yang dihitung
-        cycle    = 0
-        errors   = 0
+        tx_count           = 0
+        cycle              = 0
+        errors             = 0
+        bridged_this_cycle = False
 
         while tx_count < target:
             cycle    += 1
@@ -1180,8 +1289,10 @@ class OverlayerBot:
                 time.sleep(60)
                 continue
 
+            bridged_this_cycle = False
+
             try:
-                # Step 1: MINT - dihitung website
+                # ── Step 1: MINT 0.1 USDT → 0.1 T+  [DIHITUNG ✅] ──────────────────
                 if usdt_bal >= MINT_USDT_RAW and tx_count < target:
                     h, blk, gas = self.do_mint_cycle(w3, addr, pk)
                     tx_count += 1; errors = 0
@@ -1190,31 +1301,68 @@ class OverlayerBot:
                     self.random_delay(5, 12)
                     tplus_bal = tplus_c.functions.balanceOf(addr).call()
 
-                # Step 2: STAKE - dihitung website
-                if tplus_bal > 0 and tx_count < target:
-                    h, blk, gas = self.do_stake_cycle(w3, addr, pk, tplus_bal)
+                # ── Step 2: STAKE 0.1 T+ → sT+  [DIHITUNG ✅] ──────────────────────
+                if tplus_bal >= MINT_TPLUS_RAW and tx_count < target:
+                    h, blk, gas = self.do_stake_cycle(w3, addr, pk, MINT_TPLUS_RAW)
                     tx_count += 1; errors = 0
                     self.log(f"[STAKE] Valid Tx: {tx_count}/{target}  Block: {blk}  "
                              f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
                     self.random_delay(5, 12)
-
-                # Step 3: UNSTAKE - recycle token, TIDAK dihitung website
-                h, blk, gas = self.do_unstake_cycle(w3, addr, pk)
-                if h:
-                    errors = 0
-                    self.log(f"[UNSTAKE] recycle  Block: {blk}  "
-                             f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "INFO")
-                    self.random_delay(5, 12)
                     tplus_bal = tplus_c.functions.balanceOf(addr).call()
 
-                # Step 4: REDEEM - recycle token, TIDAK dihitung website
-                if tplus_bal > 0:
-                    h, blk, gas = self.do_redeem_cycle(w3, addr, pk, tplus_bal)
+                # ── Step 3: BRIDGE 0.1 T+ → Base Sepolia  [DIHITUNG ✅] ─────────────
+                if tplus_bal >= MINT_TPLUS_RAW and tx_count < target:
+                    try:
+                        h, blk, gas = self.do_bridge_cycle(w3, addr, pk)
+                        if h:
+                            tx_count += 1; errors = 0
+                            bridged_this_cycle = True
+                            self.log(f"[BRIDGE] Valid Tx: {tx_count}/{target}  Block: {blk}  "
+                                     f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
+                            self.random_delay(5, 12)
+                            tplus_bal = tplus_c.functions.balanceOf(addr).call()
+                    except Exception as ex:
+                        self.log(f"[BRIDGE] Skipped: {ex}", "WARNING")
+
+                # ── Step 4: UNSTAKE sT+ → T+  [recycle, tidak dihitung] ─────────────
+                try:
+                    h, blk, gas = self.do_unstake_cycle(w3, addr, pk)
                     if h:
                         errors = 0
-                        self.log(f"[REDEEM] recycle  Block: {blk}  "
+                        self.log(f"[UNSTAKE] recycle  Block: {blk}  "
                                  f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "INFO")
                         self.random_delay(5, 12)
+                        tplus_bal = tplus_c.functions.balanceOf(addr).call()
+                except Exception as ex:
+                    self.log(f"[UNSTAKE] Skipped: {ex}", "WARNING")
+
+                # ── Step 5: REDEEM T+ → USDT  [recycle, tidak dihitung] ─────────────
+                try:
+                    tplus_bal = tplus_c.functions.balanceOf(addr).call()
+                    if tplus_bal > 0:
+                        h, blk, gas = self.do_redeem_cycle(w3, addr, pk, tplus_bal)
+                        if h:
+                            errors = 0
+                            self.log(f"[REDEEM] recycle  Block: {blk}  "
+                                     f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "INFO")
+                            self.random_delay(5, 12)
+                except Exception as ex:
+                    self.log(f"[REDEEM] Skipped: {ex}", "WARNING")
+
+                # ── Step 6: BRIDGE_BACK T+ Base → ETH  [recycle, tidak dihitung] ────
+                if bridged_this_cycle:
+                    try:
+                        self.log("[BRIDGE_BACK] Tunggu 30s LayerZero delivery...", "INFO")
+                        time.sleep(30)
+                        w3_base = self.get_web3_base(proxy=proxy)
+                        h, blk, gas = self.do_bridge_back_cycle(w3_base, addr, pk)
+                        if h:
+                            errors = 0
+                            self.log(f"[BRIDGE_BACK] recycle  Block: {blk}  "
+                                     f"Gas: {gas:,}  Hash: 0x{h[:16]}...", "INFO")
+                            self.random_delay(10, 20)
+                    except Exception as ex:
+                        self.log(f"[BRIDGE_BACK] Skipped (belum tiba atau no ETH di Base): {ex}", "WARNING")
 
             except Exception as ex:
                 errors += 1
@@ -1413,7 +1561,7 @@ class OverlayerBot:
                 elif t_type == "transaction":
                     tx_target = t_amount
                     self.log(f"[Transaction] Daily cycling target: {tx_target} txs", "INFO")
-                    n = self.run_cycling(w3, addr, pk, target=tx_target)
+                    n = self.run_cycling(w3, addr, pk, target=tx_target, proxy=proxy)
                     total_tx += n
                     if n >= tx_target:
                         self.log(f"[Transaction] Target {tx_target} txs reached! ({n} done)", "SUCCESS")
