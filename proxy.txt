@@ -1,4 +1,2 @@
-# Add your proxies here, one per line (optional)
-# Format: http://user:pass@ip:port or http://ip:port
-# Example:
-# http://127.0.0.1:8080
+http://user:pass@host:port
+http://user2:pass2@host2:port2
