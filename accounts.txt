@@ -1,7 +1,2 @@
-# Fill in your private keys below (one private key per line)
-# Example format: 0xabc123...
-# NEVER share this file or commit it to GitHub!
-# Remove this comment lines before running the bot
 0xYOUR_PRIVATE_KEY_1
 0xYOUR_PRIVATE_KEY_2
-0xYOUR_PRIVATE_KEY_3
