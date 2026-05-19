@@ -351,6 +351,7 @@ MINT_REDEEM_MANAGER_ABI = [
 class OverlayerBot:
     def __init__(self):
         self.wib = pytz.timezone("Asia/Jakarta")
+        self._session_cache = {}   # {address_lower: {"token": str, "expires_at": float}}
 
     def get_wib_time(self):
         return datetime.now(self.wib).strftime("%H:%M:%S")
@@ -501,15 +502,150 @@ class OverlayerBot:
                 self.log(f"  {sym:<8}: {human:.6f}", "INFO")
 
     # ════════════════════════════════════════════════════════════════════════
+    # ─── SIWE AUTH (Sign-In With Ethereum) ───────────────────────────────────
+    # ════════════════════════════════════════════════════════════════════════
+
+    def _get_cached_token(self, address):
+        """Return cached JWT token jika masih valid (>60s sebelum expire)."""
+        key  = address.lower()
+        info = self._session_cache.get(key)
+        if not info:
+            return None
+        if time.time() >= info["expires_at"] - 60:
+            del self._session_cache[key]
+            return None
+        return info["token"]
+
+    def _cache_token(self, address, token, expires_at_iso):
+        """Simpan JWT token ke memory cache."""
+        try:
+            from datetime import timezone
+            dt = datetime.fromisoformat(expires_at_iso.replace("Z", "+00:00"))
+            self._session_cache[address.lower()] = {
+                "token":      token,
+                "expires_at": dt.timestamp(),
+            }
+        except Exception:
+            pass
+
+    def ensure_gdpr_consent(self, address, proxy=None):
+        """POST GDPR consent kalau belum disetujui."""
+        proxies = {"http": proxy, "https": proxy} if proxy else None
+        try:
+            r = requests.get(
+                f"{API_BASE}/api-s/gdpr-consent/{address}",
+                headers={"Origin": "https://testnet.overlayer.fi"},
+                proxies=proxies, timeout=10,
+            )
+            if r.json().get("accepted"):
+                return True  # sudah consent
+            # Belum consent — POST untuk menyetujui
+            r2 = requests.post(
+                f"{API_BASE}/api-s/gdpr-consent/{address}",
+                headers={"Origin": "https://testnet.overlayer.fi",
+                         "Content-Type": "application/json"},
+                proxies=proxies, timeout=10,
+            )
+            if r2.json().get("success"):
+                self.log(f"GDPR consent accepted for {address[:10]}...", "INFO")
+                return True
+        except Exception as ex:
+            self.log(f"GDPR consent error (non-fatal): {ex}", "WARNING")
+        return False
+
+    def authenticate(self, address, pk, proxy=None):
+        """
+        SIWE flow:
+          1. (opsional) POST /api-s/gdpr-consent/{address}  → terima GDPR
+          2. GET  /api-s/auth/nonce/{address}  → nonce
+          3. sign message: "Request Overlayer social session\\n{addr}\\n{ts}\\n{nonce}"
+          4. POST /api-s/auth/verify/{address} {message, signature} → JWT token
+        Return JWT token string, or None on failure.
+        """
+        # Kembalikan token dari cache kalau masih valid
+        cached = self._get_cached_token(address)
+        if cached:
+            return cached
+
+        proxies = {"http": proxy, "https": proxy} if proxy else None
+        try:
+            # Step 0: pastikan GDPR consent sudah di-accept
+            self.ensure_gdpr_consent(address, proxy=proxy)
+
+            # Step 1: ambil nonce
+            r = requests.get(
+                f"{API_BASE}/api-s/auth/nonce/{address}",
+                headers={"Origin": "https://testnet.overlayer.fi",
+                         "Referer": "https://testnet.overlayer.fi/"},
+                proxies=proxies, timeout=15,
+            )
+            r.raise_for_status()
+            nonce_data = r.json()
+            if not nonce_data.get("success"):
+                self.log(f"Auth nonce failed: {nonce_data}", "ERROR")
+                return None
+            nonce = nonce_data["nonce"]
+
+            # Step 2: buat & sign message
+            ts      = int(time.time()) + 5 * 60   # expire 5 menit ke depan
+            message = f"Request Overlayer social session\n{address}\n{ts}\n{nonce}"
+            from eth_account.messages import encode_defunct as _edf
+            raw_sig = Account.from_key(pk).sign_message(_edf(text=message)).signature.hex()
+            # API butuh hex dengan prefix "0x"
+            sig     = raw_sig if raw_sig.startswith("0x") else "0x" + raw_sig
+
+            # Step 3: verifikasi & dapat token
+            r2 = requests.post(
+                f"{API_BASE}/api-s/auth/verify/{address}",
+                json={"message": message, "signature": sig},
+                headers={"Origin": "https://testnet.overlayer.fi",
+                         "Referer": "https://testnet.overlayer.fi/",
+                         "Content-Type": "application/json"},
+                proxies=proxies, timeout=15,
+            )
+            r2.raise_for_status()
+            verify_data = r2.json()
+            if not verify_data.get("success") or not verify_data.get("token"):
+                self.log(f"Auth verify failed: {verify_data}", "ERROR")
+                return None
+
+            token      = verify_data["token"]
+            expires_at = verify_data.get("expiresAt", "")
+            self._cache_token(address, token, expires_at)
+            self.log(f"Auth success for {address[:10]}...", "SUCCESS")
+            return token
+
+        except Exception as ex:
+            self.log(f"Auth error: {ex}", "ERROR")
+            return None
+
+    def _auth_headers(self, token):
+        """Return dict headers dengan Authorization Bearer."""
+        if token:
+            return {"Authorization": f"Bearer {token}"}
+        return {}
+
+    # ════════════════════════════════════════════════════════════════════════
     # ─── API: Fetch tasks ────────────────────────────────────────────────────
     # ════════════════════════════════════════════════════════════════════════
 
-    def fetch_tasks(self, address, proxy=None):
+    def fetch_tasks(self, address, pk, proxy=None):
         url     = f"{API_BASE}/api-s/socials/onchain-tasks"
         proxies = {"http": proxy, "https": proxy} if proxy else None
+
+        # Autentikasi dulu
+        token = self.authenticate(address, pk, proxy=proxy)
+        if not token:
+            self.log("Skipping task fetch — auth failed.", "WARNING")
+            return []
+
         try:
-            resp = requests.get(url, params={"address": address},
-                                proxies=proxies, timeout=15)
+            resp = requests.get(
+                url,
+                params={"address": address},
+                headers=self._auth_headers(token),
+                proxies=proxies, timeout=15,
+            )
             resp.raise_for_status()
             data  = resp.json()
             tasks = data.get("tasks", [])
@@ -524,15 +660,20 @@ class OverlayerBot:
             self.log(f"Failed to fetch tasks: {ex}", "WARNING")
             return []
 
-    def fetch_points(self, address, proxy=None):
+    def fetch_points(self, address, pk, proxy=None):
         """Ambil total poin yang sudah dikumpulkan address ini."""
         url     = f"{API_BASE}/api-s/socials/onchain-tasks/points/{address}"
         proxies = {"http": proxy, "https": proxy} if proxy else None
+        token   = self.authenticate(address, pk, proxy=proxy)
         try:
-            resp = requests.get(url, proxies=proxies, timeout=10)
+            resp = requests.get(
+                url,
+                headers=self._auth_headers(token),
+                proxies=proxies, timeout=10,
+            )
             resp.raise_for_status()
             data = resp.json()
-            return data.get("totalPoints", 0)
+            return data.get("totalPoints", 0) if isinstance(data, dict) else (data if isinstance(data, (int, float)) else 0)
         except Exception:
             return 0
 
@@ -1460,7 +1601,7 @@ class OverlayerBot:
             self.log("Faucet: https://cloud.google.com/application/web3/faucet/ethereum/sepolia", "WARNING")
 
         # Tampilkan total poin dan status early user
-        total_pts = self.fetch_points(addr, proxy=proxy)
+        total_pts = self.fetch_points(addr, pk, proxy=proxy)
         self.log(f"Total Points  : {total_pts:,}", "INFO")
 
         eu_status = self.fetch_earlyuser_status(addr, proxy=proxy)
@@ -1468,7 +1609,7 @@ class OverlayerBot:
             self.log(f"Early User    : {eu_status}", "INFO")
 
         # Fetch & print tasks
-        tasks = self.fetch_tasks(addr, proxy=proxy)
+        tasks = self.fetch_tasks(addr, pk, proxy=proxy)
         self.print_tasks(tasks)
 
         if not tasks:
