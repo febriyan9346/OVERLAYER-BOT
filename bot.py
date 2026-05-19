@@ -29,11 +29,6 @@ _fh.setFormatter(logging.Formatter("%(asctime)s  %(levelname)-7s  %(message)s", 
 _flog.addHandler(_fh)
 _flog.propagate = False
 
-# ════════════════════════════════════════════════════════════════════════════
-# ─── CHAIN CONFIG ────────────────────────────────────────────────────────────
-# ════════════════════════════════════════════════════════════════════════════
-
-# ── ETH Sepolia ───────────────────────────────────────────────────────────────
 CHAIN_ID_ETH_SEP      = 11155111
 RPC_URLS_ETH_SEP = [
     "https://ethereum-sepolia-rpc.publicnode.com",
@@ -42,7 +37,6 @@ RPC_URLS_ETH_SEP = [
     "https://1rpc.io/sepolia",
 ]
 
-# ── Base Sepolia ──────────────────────────────────────────────────────────────
 CHAIN_ID_BASE_SEP     = 84532
 RPC_URLS_BASE_SEP = [
     "https://sepolia.base.org",
@@ -50,113 +44,69 @@ RPC_URLS_BASE_SEP = [
     "https://base-sepolia.drpc.org",
 ]
 
-# Default chain (tasks berjalan di ETH Sepolia)
 CHAIN_ID = CHAIN_ID_ETH_SEP
 RPC_URLS = RPC_URLS_ETH_SEP
 
-# ── LayerZero EIDs ────────────────────────────────────────────────────────────
-# Source: bundle Qut={mainnet:30101,sepolia:40161}, Zut={mainnet:30184,sepolia:40245}
-LZ_EID_ETH_MAINNET  = 30101   # ETH Mainnet
-LZ_EID_BASE_MAINNET = 30184   # Base Mainnet
-LZ_EID_ETH_SEPOLIA  = 40161   # ETH Sepolia  (testnet)
-LZ_EID_BASE_SEPOLIA = 40245   # Base Sepolia (testnet)
+LZ_EID_ETH_MAINNET  = 30101
+LZ_EID_BASE_MAINNET = 30184
+LZ_EID_ETH_SEPOLIA  = 40161
+LZ_EID_BASE_SEPOLIA = 40245
 
-# ════════════════════════════════════════════════════════════════════════════
-# ─── API ─────────────────────────────────────────────────────────────────────
-# ════════════════════════════════════════════════════════════════════════════
 API_BASE = "https://api.overlayer.fi"
 
-# ── API Endpoints (lengkap dari bundle) ──────────────────────────────────────
-# GET  /api-s/socials/onchain-tasks?address={addr}       → task list harian
-# GET  /api-s/socials/onchain-tasks/points/{addr}        → total points
-# GET  /api-s/socials/leaderboard                        → leaderboard
-# GET  /api-s/socials/{addr}                             → profile sosial
-# GET  /api-s/socials/{addr}/discord-verify              → verif discord
-# GET  /api-s/socials/{addr}/telegram-check              → cek telegram
-# POST /api-s/socials/og/mint/{addr}                     → mint OVA OG NFT
-# GET  /api-s/earlyuser/status/{addr}                    → status early user
-# GET  /api-s/gdpr-consent/{addr}                        → GDPR consent
+USDT_CONTRACT    = Web3.to_checksum_address("0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0")
+USDC_CONTRACT    = Web3.to_checksum_address("0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8")
+AUSDT_CONTRACT   = Web3.to_checksum_address("0xAF0F6e8b0Dc5c913bbF4d14c22B4E78Dd14310B6")
+AUSDC_CONTRACT   = Web3.to_checksum_address("0x16dA4541aD1807f4443d92D26044C1147406EB80")
 
-# ════════════════════════════════════════════════════════════════════════════
-# ─── CONTRACT ADDRESSES — ETH SEPOLIA (chain 11155111) ───────────────────────
-# ════════════════════════════════════════════════════════════════════════════
+T_PLUS_CONTRACT  = Web3.to_checksum_address("0xe20534a32f9162488a90026F268a74fBE28d272D")
+ST_PLUS_CONTRACT = Web3.to_checksum_address("0x079a4Bf1Cbd0E4ce15391340cB46efA6396aBc82")
+C_PLUS_CONTRACT  = Web3.to_checksum_address("0xE815718D44694ec4637CB775C468d87f6e15B538")
+SC_PLUS_CONTRACT = Web3.to_checksum_address("0x753937137Eb92871A6F3517514d4f1Ee860e3FDF")
 
-# ── Collateral tokens (bawahan Aave / USDT / USDC asli) ──────────────────────
-USDT_CONTRACT    = Web3.to_checksum_address("0xaA8E23Fb1079EA71e0a56F48a2aA51851D8433D0")  # USDT  (dec=6)
-USDC_CONTRACT    = Web3.to_checksum_address("0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8")  # USDC  (dec=6)
-AUSDT_CONTRACT   = Web3.to_checksum_address("0xAF0F6e8b0Dc5c913bbF4d14c22B4E78Dd14310B6")  # aUSDT Aave (dec=6)
-AUSDC_CONTRACT   = Web3.to_checksum_address("0x16dA4541aD1807f4443d92D26044C1147406EB80")  # aUSDC Aave (dec=6)
+BACKING_USDT_CONTRACT = Web3.to_checksum_address("0xC6110c7Ba33a20dEfAA834B6fE0f3A1e801BC75A")
+BACKING_USDC_CONTRACT = Web3.to_checksum_address("0xe1D1CFab6341567E8Ae367eb3D63003f045467BE")
+MINT_REDEEM_MANAGER   = Web3.to_checksum_address("0xD0Bc2335fa66714EdFe0b766092808f3D08Dd543")
 
-# ── Wrap tokens (Overlayer wrap) ──────────────────────────────────────────────
-T_PLUS_CONTRACT  = Web3.to_checksum_address("0xe20534a32f9162488a90026F268a74fBE28d272D")  # T+    (dec=18)
-ST_PLUS_CONTRACT = Web3.to_checksum_address("0x079a4Bf1Cbd0E4ce15391340cB46efA6396aBc82")  # sT+   (dec=18)
-C_PLUS_CONTRACT  = Web3.to_checksum_address("0xE815718D44694ec4637CB775C468d87f6e15B538")  # C+    (dec=18)
-SC_PLUS_CONTRACT = Web3.to_checksum_address("0x753937137Eb92871A6F3517514d4f1Ee860e3FDF")  # sC+   (dec=18)
+POINTS_CONTRACT  = Web3.to_checksum_address("0xeD8f198Ad99468f351D2eaf93DDb6B2E1565Ceeb")
+LP_CONTRACT      = Web3.to_checksum_address("0x1Ac7E198685e53cCc3599e1656E48Dd7E278EbbE")
 
-# ── Backing / MintRedeemManager contracts ────────────────────────────────────
-BACKING_USDT_CONTRACT = Web3.to_checksum_address("0xC6110c7Ba33a20dEfAA834B6fE0f3A1e801BC75A")  # MintRedeem USDT
-BACKING_USDC_CONTRACT = Web3.to_checksum_address("0xe1D1CFab6341567E8Ae367eb3D63003f045467BE")  # MintRedeem USDC
-MINT_REDEEM_MANAGER   = Web3.to_checksum_address("0xD0Bc2335fa66714EdFe0b766092808f3D08Dd543")  # MintRedeemManager (APR)
+OVA_NFT_CONTRACT = Web3.to_checksum_address("0x89e2f66E0F79B725321bCD457EB3640ae2e639E6")
+GALXE_NFT_CONTRACT = Web3.to_checksum_address("0x28ACC9a8D03d46a3497e22C8754EF0F4B71F9931")
 
-# ── Reward / Governance tokens ────────────────────────────────────────────────
-POINTS_CONTRACT  = Web3.to_checksum_address("0xeD8f198Ad99468f351D2eaf93DDb6B2E1565Ceeb")  # POINTS / pOVA (dec=18)
-LP_CONTRACT      = Web3.to_checksum_address("0x1Ac7E198685e53cCc3599e1656E48Dd7E278EbbE")  # LP token (dec=18)
-
-# ── NFT / OG contracts ────────────────────────────────────────────────────────
-OVA_NFT_CONTRACT = Web3.to_checksum_address("0x89e2f66E0F79B725321bCD457EB3640ae2e639E6")  # OVA OG NFT
-GALXE_NFT_CONTRACT = Web3.to_checksum_address("0x28ACC9a8D03d46a3497e22C8754EF0F4B71F9931")  # Galxe Gated NFT
-
-# ── Faucet contract (PUBLIC — siapa saja bisa call) ───────────────────────────
 FAUCET_CONTRACT  = Web3.to_checksum_address("0xC959483DBa39aa9E78757139af0e9a2EDEb3f42D")
-# mint(address token, address to, uint256 amount)
 
-# ── Multicall3 (untuk batch read balances) ────────────────────────────────────
-MULTICALL3_CONTRACT = Web3.to_checksum_address("0xca11bde05977b3631167028862be2a173976ca11")  # standard multicall3
+MULTICALL3_CONTRACT = Web3.to_checksum_address("0xca11bde05977b3631167028862be2a173976ca11")
 
-# ════════════════════════════════════════════════════════════════════════════
-# ─── CONTRACT ADDRESSES — BASE SEPOLIA (chain 84532) ─────────────────────────
-# ════════════════════════════════════════════════════════════════════════════
+T_PLUS_BASE_CONTRACT  = Web3.to_checksum_address("0xdE287B4a0918102511b027d53688c169fb308762")
+ST_PLUS_BASE_CONTRACT = Web3.to_checksum_address("0x5BBc62c58C3b23566488fdFa78455ea00C31a76C")
 
-# ── T+ & sT+ on Base Sepolia (bridge destination) ────────────────────────────
-T_PLUS_BASE_CONTRACT  = Web3.to_checksum_address("0xdE287B4a0918102511b027d53688c169fb308762")  # T+  Base Sep
-ST_PLUS_BASE_CONTRACT = Web3.to_checksum_address("0x5BBc62c58C3b23566488fdFa78455ea00C31a76C")  # sT+ Base Sep
-
-# ── C+ & sC+ on Base Sepolia ──────────────────────────────────────────────────
-C_PLUS_BASE_CONTRACT  = Web3.to_checksum_address("0x92f36E427a9579fe1356f19c74eb5d64bEae8930")  # C+  Base Sep
-SC_PLUS_BASE_CONTRACT = Web3.to_checksum_address("0x5BBc62c58C3b23566488fdFa78455ea00C31a76C")  # sC+ Base Sep
-
-# ════════════════════════════════════════════════════════════════════════════
-# ─── DECIMALS & CONSTANTS ────────────────────────────────────────────────────
-# ════════════════════════════════════════════════════════════════════════════
+C_PLUS_BASE_CONTRACT  = Web3.to_checksum_address("0x92f36E427a9579fe1356f19c74eb5d64bEae8930")
+SC_PLUS_BASE_CONTRACT = Web3.to_checksum_address("0x5BBc62c58C3b23566488fdFa78455ea00C31a76C")
 
 USDT_DECIMALS  = 6
 USDC_DECIMALS  = 6
-TOKEN_DECIMALS = 18   # T+, sT+, C+, sC+, POINTS, LP
-NFT_DECIMALS   = 0    # NFT (ERC-721)
+TOKEN_DECIMALS = 18
+NFT_DECIMALS   = 0
 MAX_UINT256    = 2**256 - 1
 
-# Cycling params
-MINT_USDT_RAW  = 100_000    # 0.1 USDT  (untuk cycling)
-MINT_TPLUS_RAW = 10**17     # 0.1 T+
+MINT_USDT_RAW  = 100_000
+MINT_TPLUS_RAW = 10**17
 
-# Faucet config
 FAUCET_BUFFER_MULTIPLIER = 1.3
 FAUCET_MAX_PER_CALL_USDT = 10_000 * 10**USDT_DECIMALS
 FAUCET_MAX_PER_CALL_USDC = 10_000 * 10**USDC_DECIMALS
 
-# ════════════════════════════════════════════════════════════════════════════
-# ─── PRODUCT MAP — lengkap semua token per produk ────────────────────────────
-# ════════════════════════════════════════════════════════════════════════════
 PRODUCT_MAP = {
     "usdt": {
         "wrap":                 T_PLUS_CONTRACT,
         "stake":                ST_PLUS_CONTRACT,
         "collateral":           USDT_CONTRACT,
         "collateral_dec":       USDT_DECIMALS,
-        "a_collateral":         AUSDT_CONTRACT,       # NEW: aToken Aave
-        "backing":              BACKING_USDT_CONTRACT, # NEW: MintRedeemManager USDT
-        "wrap_base":            T_PLUS_BASE_CONTRACT,  # NEW: T+ on Base Sepolia
-        "stake_base":           ST_PLUS_BASE_CONTRACT, # NEW: sT+ on Base Sepolia
+        "a_collateral":         AUSDT_CONTRACT,
+        "backing":              BACKING_USDT_CONTRACT,
+        "wrap_base":            T_PLUS_BASE_CONTRACT,
+        "stake_base":           ST_PLUS_BASE_CONTRACT,
         "wrap_symbol":          "T+",
         "stake_symbol":         "sT+",
         "collateral_symbol":    "USDT",
@@ -168,10 +118,10 @@ PRODUCT_MAP = {
         "stake":                SC_PLUS_CONTRACT,
         "collateral":           USDC_CONTRACT,
         "collateral_dec":       USDC_DECIMALS,
-        "a_collateral":         AUSDC_CONTRACT,        # NEW
-        "backing":              BACKING_USDC_CONTRACT,  # NEW
-        "wrap_base":            C_PLUS_BASE_CONTRACT,   # NEW: C+ on Base Sepolia
-        "stake_base":           SC_PLUS_BASE_CONTRACT,  # NEW: sC+ on Base Sepolia
+        "a_collateral":         AUSDC_CONTRACT,
+        "backing":              BACKING_USDC_CONTRACT,
+        "wrap_base":            C_PLUS_BASE_CONTRACT,
+        "stake_base":           SC_PLUS_BASE_CONTRACT,
         "wrap_symbol":          "C+",
         "stake_symbol":         "sC+",
         "collateral_symbol":    "USDC",
@@ -179,10 +129,6 @@ PRODUCT_MAP = {
         "lz_eid_dst":           LZ_EID_BASE_SEPOLIA,
     },
 }
-
-# ════════════════════════════════════════════════════════════════════════════
-# ─── ABIs ─────────────────────────────────────────────────────────────────────
-# ════════════════════════════════════════════════════════════════════════════
 
 ERC20_ABI = [
     {"inputs": [{"name": "owner",   "type": "address"},
@@ -324,7 +270,6 @@ FAUCET_ABI = [
      "stateMutability": "view", "type": "function"},
 ]
 
-# ── Multicall3 ABI (untuk batch read) ─────────────────────────────────────────
 MULTICALL3_ABI = [
     {"inputs": [{"components": [
         {"name": "target",   "type": "address"},
@@ -336,7 +281,6 @@ MULTICALL3_ABI = [
      "stateMutability": "view", "type": "function"},
 ]
 
-# ── APY/backing ABI (MintRedeemManager / j5e) ─────────────────────────────────
 MINT_REDEEM_MANAGER_ABI = [
     {"inputs": [{"name": "token",      "type": "address"},
                 {"name": "decimals",   "type": "uint256"},
@@ -346,12 +290,10 @@ MINT_REDEEM_MANAGER_ABI = [
      "stateMutability": "view", "type": "function"},
 ]
 
-
-# ════════════════════════════════════════════════════════════════════════════
 class OverlayerBot:
     def __init__(self):
         self.wib = pytz.timezone("Asia/Jakarta")
-        self._session_cache = {}   # {address_lower: {"token": str, "expires_at": float}}
+        self._session_cache = {}
 
     def get_wib_time(self):
         return datetime.now(self.wib).strftime("%H:%M:%S")
@@ -405,12 +347,11 @@ class OverlayerBot:
     def countdown(self, seconds):
         for i in range(seconds, 0, -1):
             h = i // 3600; m = (i % 3600) // 60; s = i % 60
-            print(f"\r[COUNTDOWN] Next cycle in: {Fore.YELLOW}{h:02d}:{m:02d}:{s:02d}{Style.RESET_ALL} ",
+            print(f"\r[COUNTDOWN] Next cycle in: {h:02d}:{m:02d}:{s:02d} ",
                   end="", flush=True)
             time.sleep(1)
         print("\r" + " " * 60 + "\r", end="", flush=True)
 
-    # ── Web3 helpers ──────────────────────────────────────────────────────────
     def get_web3(self, proxy=None, rpc_list=None):
         if rpc_list is None:
             rpc_list = RPC_URLS
@@ -430,7 +371,6 @@ class OverlayerBot:
         """Koneksi ke Base Sepolia (untuk cek balance pasca bridge)."""
         return self.get_web3(proxy=proxy, rpc_list=RPC_URLS_BASE_SEP)
 
-    # ── TX helpers ────────────────────────────────────────────────────────────
     def build_tx(self, w3, fn, sender, default_gas=300_000, value=0, chain_id=None):
         if chain_id is None:
             chain_id = CHAIN_ID
@@ -466,10 +406,6 @@ class OverlayerBot:
         self.log(f"Approve success  Block: {blk}  Gas: {gas:,}  Tx: 0x{h[:12]}...", "SUCCESS")
         self.random_delay(2, 5)
 
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── BALANCE READER ──────────────────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
-
     def read_all_balances(self, w3, addr):
         """Baca semua token balance sekaligus."""
         def bal(contract_addr, dec=18):
@@ -500,10 +436,6 @@ class OverlayerBot:
         for sym, (raw, human) in balances.items():
             if human > 0 or sym in ("ETH", "USDT", "USDC"):
                 self.log(f"  {sym:<8}: {human:.6f}", "INFO")
-
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── SIWE AUTH (Sign-In With Ethereum) ───────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
 
     def _get_cached_token(self, address):
         """Return cached JWT token jika masih valid (>60s sebelum expire)."""
@@ -538,8 +470,7 @@ class OverlayerBot:
                 proxies=proxies, timeout=10,
             )
             if r.json().get("accepted"):
-                return True  # sudah consent
-            # Belum consent — POST untuk menyetujui
+                return True
             r2 = requests.post(
                 f"{API_BASE}/api-s/gdpr-consent/{address}",
                 headers={"Origin": "https://testnet.overlayer.fi",
@@ -562,17 +493,14 @@ class OverlayerBot:
           4. POST /api-s/auth/verify/{address} {message, signature} → JWT token
         Return JWT token string, or None on failure.
         """
-        # Kembalikan token dari cache kalau masih valid
         cached = self._get_cached_token(address)
         if cached:
             return cached
 
         proxies = {"http": proxy, "https": proxy} if proxy else None
         try:
-            # Step 0: pastikan GDPR consent sudah di-accept
             self.ensure_gdpr_consent(address, proxy=proxy)
 
-            # Step 1: ambil nonce
             r = requests.get(
                 f"{API_BASE}/api-s/auth/nonce/{address}",
                 headers={"Origin": "https://testnet.overlayer.fi",
@@ -586,15 +514,12 @@ class OverlayerBot:
                 return None
             nonce = nonce_data["nonce"]
 
-            # Step 2: buat & sign message
-            ts      = int(time.time()) + 5 * 60   # expire 5 menit ke depan
+            ts      = int(time.time()) + 5 * 60
             message = f"Request Overlayer social session\n{address}\n{ts}\n{nonce}"
             from eth_account.messages import encode_defunct as _edf
             raw_sig = Account.from_key(pk).sign_message(_edf(text=message)).signature.hex()
-            # API butuh hex dengan prefix "0x"
             sig     = raw_sig if raw_sig.startswith("0x") else "0x" + raw_sig
 
-            # Step 3: verifikasi & dapat token
             r2 = requests.post(
                 f"{API_BASE}/api-s/auth/verify/{address}",
                 json={"message": message, "signature": sig},
@@ -625,15 +550,10 @@ class OverlayerBot:
             return {"Authorization": f"Bearer {token}"}
         return {}
 
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── API: Fetch tasks ────────────────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
-
     def fetch_tasks(self, address, pk, proxy=None):
         url     = f"{API_BASE}/api-s/socials/onchain-tasks"
         proxies = {"http": proxy, "https": proxy} if proxy else None
 
-        # Autentikasi dulu
         token = self.authenticate(address, pk, proxy=proxy)
         if not token:
             self.log("Skipping task fetch — auth failed.", "WARNING")
@@ -649,11 +569,18 @@ class OverlayerBot:
             resp.raise_for_status()
             data  = resp.json()
             tasks = data.get("tasks", [])
-            # Filter hanya eth-sepolia, skip yang sudah selesai
-            tasks = [t for t in tasks
-                     if t.get("chain") == "eth-sepolia" and not t.get("completed", False)]
-            # Urut: transaction (cycling) paling akhir
-            tasks.sort(key=lambda t: 1 if t["type"] == "transaction" else 0)
+            if tasks:
+                raw_chains = set(t.get("chain", "NO_CHAIN") for t in tasks)
+                raw_types  = set(t.get("type",  "NO_TYPE")  for t in tasks)
+                all_count  = len(tasks)
+                done_count = sum(1 for t in tasks if t.get("completed", False))
+                self.log(f"[API] Total tasks: {all_count}  Done: {done_count}  "
+                         f"Chains: {raw_chains}  Types: {raw_types}", "INFO")
+            else:
+                self.log(f"[API] No tasks returned from API for {address[:10]}...", "WARNING")
+
+            tasks = [t for t in tasks if not t.get("completed", False)]
+            tasks.sort(key=lambda t: 1 if t.get("type", "") == "transaction" else 0)
             self.log(f"Fetched {len(tasks)} pending tasks for {address[:10]}...", "INFO")
             return tasks
         except Exception as ex:
@@ -694,15 +621,15 @@ class OverlayerBot:
             return
         self.log(f"Today's Tasks ({len(tasks)}):", "INFO")
         for i, t in enumerate(tasks, 1):
-            p   = PRODUCT_MAP.get(t.get("product", ""), {})
-            sym = p.get("wrap_symbol", t.get("product", "?").upper())
-            print(f"  {Fore.CYAN}{i}. [{t['type'].upper():11}] {t['amount']:>6} {sym:<4} "
-                  f"+{t.get('points',0):>4}pts  |  {t['description']}{Style.RESET_ALL}")
+            p    = PRODUCT_MAP.get(t.get("product", ""), {})
+            sym  = p.get("wrap_symbol", (t.get("product") or "?").upper())
+            ttype = t.get("type", "?")
+            amt   = t.get("amount", "?")
+            desc  = t.get("description", t.get("title", ""))
+            pts   = t.get("points", 0)
+            print(f"  {Fore.CYAN}{i}. [{ttype.upper():11}] {str(amt):>6} {sym:<4} "
+                  f"+{pts:>4}pts  |  {desc}{Style.RESET_ALL}")
         print()
-
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── AUTO TOPUP via FAUCET ───────────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
 
     def faucet_mint(self, w3, addr, pk, token_addr, amount_raw, symbol):
         faucet     = w3.eth.contract(address=FAUCET_CONTRACT, abi=FAUCET_ABI)
@@ -762,7 +689,6 @@ class OverlayerBot:
                     need_usdt_raw += t_amount * 10**USDT_DECIMALS
 
             elif t_type in ("unstake", "redeem"):
-                # tidak butuh topup, malah mendapat token kembali
                 pass
 
         cycling_usdt   = int((cycling_target / 4 + 2) * MINT_USDT_RAW)
@@ -802,10 +728,6 @@ class OverlayerBot:
         cf = usdc_c.functions.balanceOf(addr).call()
         self.log(f"Materials ready  USDT: {uf/10**USDT_DECIMALS:,.2f}  "
                  f"USDC: {cf/10**USDC_DECIMALS:,.2f}", "SUCCESS")
-
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── TASK EXECUTORS ──────────────────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
 
     def ensure_wrap_balance(self, w3, addr, pk, product, amount_wei):
         p         = PRODUCT_MAP[product]
@@ -847,7 +769,6 @@ class OverlayerBot:
         self.random_delay(3, 6)
         return True
 
-    # ── type: mint ────────────────────────────────────────────────────────────
     def exec_mint(self, w3, addr, pk, task):
         product    = task.get("product", "usdt")
         amount     = task["amount"]
@@ -882,7 +803,6 @@ class OverlayerBot:
                  f"Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: stake ───────────────────────────────────────────────────────────
     def exec_stake(self, w3, addr, pk, task):
         product    = task.get("product", "usdt")
         amount     = task["amount"]
@@ -910,7 +830,6 @@ class OverlayerBot:
                  f"Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: unstake (NEW) ───────────────────────────────────────────────────
     def exec_unstake(self, w3, addr, pk, task):
         """
         Unstake sT+ / sC+ kembali ke T+ / C+.
@@ -941,7 +860,6 @@ class OverlayerBot:
         self.log(f"[Unstake] success!  Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: redeem (NEW) ────────────────────────────────────────────────────
     def exec_redeem(self, w3, addr, pk, task):
         """
         Redeem T+ / C+ kembali ke USDT / USDC.
@@ -966,8 +884,9 @@ class OverlayerBot:
             self.log(f"[Redeem] No {sym} balance. Skipped.", "WARNING")
             return None, None, None
 
+        backing_addr  = p["backing"]
         wrap_contract = w3.eth.contract(address=p["wrap"], abi=WRAP_ABI)
-        self.ensure_allowance(w3, p["wrap"], p["wrap"], addr, pk, amount_wei)
+        self.ensure_allowance(w3, p["wrap"], backing_addr, addr, pk, amount_wei)
         order = (addr, addr, p["collateral"], collateral_amount, amount_wei)
         h, blk, gas = self.send_tx(
             w3, self.build_tx(w3, wrap_contract.functions.redeem(order), addr), pk)
@@ -975,7 +894,6 @@ class OverlayerBot:
                  f"Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: bridge ──────────────────────────────────────────────────────────
     def exec_bridge(self, w3, addr, pk, task):
         product    = task.get("product", "usdc")
         amount     = task["amount"]
@@ -1043,7 +961,6 @@ class OverlayerBot:
                  f"Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: bridge_back (NEW) ───────────────────────────────────────────────
     def exec_bridge_back(self, w3_base, addr, pk, task):
         """
         Bridge balik dari Base Sepolia ke ETH Sepolia.
@@ -1101,7 +1018,6 @@ class OverlayerBot:
                  f"Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: send ────────────────────────────────────────────────────────────
     def exec_send(self, w3, addr, pk, task, to_address):
         product    = task.get("product", "usdt")
         amount     = task["amount"]
@@ -1122,7 +1038,6 @@ class OverlayerBot:
                  f"To: {to_address[:10]}...  Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: receive ─────────────────────────────────────────────────────────
     def exec_receive(self, w3, addr, pk, task, all_accounts):
         product    = task.get("product", "usdc")
         amount     = task["amount"]
@@ -1145,7 +1060,6 @@ class OverlayerBot:
                 sender_addr = oa
                 break
 
-        # Jika tidak ada akun lain yang cukup → gunakan akun sendiri, kirim ke diri sendiri
         if not sender_pk:
             self.log(f"[Receive] No other account has {sym}. Will mint & self-send.", "WARNING")
             if self.ensure_wrap_balance(w3, addr, pk, product, amount_wei):
@@ -1167,7 +1081,6 @@ class OverlayerBot:
                  f"Block: {blk}  Gas: {gas:,}  Hash: 0x{h[:16]}...", "SUCCESS")
         return h, blk, gas
 
-    # ── type: swap (NEW — potensi task baru: swap T+ <-> C+) ─────────────────
     def exec_swap(self, w3, addr, pk, task):
         """
         Potensi task swap antar produk.
@@ -1182,16 +1095,14 @@ class OverlayerBot:
 
         self.log(f"[Swap] {amount} {p_in['wrap_symbol']}  →  {p_out['wrap_symbol']}", "INFO")
 
-        # Step 1: Redeem wrap_in → collateral_in
         wrap_in_c = w3.eth.contract(address=p_in["wrap"], abi=WRAP_ABI)
         col_amount = amount * (10 ** p_in["collateral_dec"])
-        self.ensure_allowance(w3, p_in["wrap"], p_in["wrap"], addr, pk, amount_wei)
+        self.ensure_allowance(w3, p_in["wrap"], p_in["backing"], addr, pk, amount_wei)
         order_redeem = (addr, addr, p_in["collateral"], col_amount, amount_wei)
         h1, blk1, gas1 = self.send_tx(w3, self.build_tx(w3, wrap_in_c.functions.redeem(order_redeem), addr), pk)
         self.log(f"[Swap] Redeem {p_in['wrap_symbol']} → {p_in['collateral_symbol']}  Hash: 0x{h1[:16]}...", "SUCCESS")
         self.random_delay(3, 6)
 
-        # Step 2: Mint wrap_out dari collateral_out (asumsi sama-sama USDT/USDC)
         h2, blk2, gas2 = self.send_tx(
             w3,
             self.build_tx(
@@ -1208,7 +1119,6 @@ class OverlayerBot:
         self.log(f"[Swap] Mint {p_out['wrap_symbol']}  Hash: 0x{h2[:16]}...", "SUCCESS")
         return h2, blk2, gas2
 
-    # ── type: liquidity_add / liquidity_remove (NEW potential tasks) ──────────
     def exec_liquidity_add(self, w3, addr, pk, task):
         """
         Placeholder untuk task add liquidity (LP token).
@@ -1222,10 +1132,6 @@ class OverlayerBot:
     def exec_liquidity_remove(self, w3, addr, pk, task):
         self.log(f"[LP Remove] Task detected but full LP ABI not yet available. Logged for review.", "WARNING")
         return None, None, None
-
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── CYCLING (type: transaction) ─────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
 
     def do_mint_cycle(self, w3, addr, pk):
         self.log("Cycle Mint  0.1 USDT  ->  0.1 T+", "INFO")
@@ -1271,7 +1177,7 @@ class OverlayerBot:
         redeem_usdt  = min(int(redeem_tplus * MINT_USDT_RAW / MINT_TPLUS_RAW), MINT_USDT_RAW)
         self.log(f"Cycle Redeem  {redeem_tplus/10**TOKEN_DECIMALS:.6f} T+  ->  "
                  f"{redeem_usdt/10**USDT_DECIMALS:.4f} USDT", "INFO")
-        self.ensure_allowance(w3, T_PLUS_CONTRACT, T_PLUS_CONTRACT, addr, pk, redeem_tplus)
+        self.ensure_allowance(w3, T_PLUS_CONTRACT, BACKING_USDT_CONTRACT, addr, pk, redeem_tplus)
         self.random_delay(2, 5)
         c = w3.eth.contract(address=T_PLUS_CONTRACT, abi=WRAP_ABI)
         return self.send_tx(
@@ -1284,7 +1190,7 @@ class OverlayerBot:
     def do_bridge_cycle(self, w3, addr, pk):
         """Bridge 0.1 T+ dari ETH Sepolia ke Base Sepolia. Dihitung website."""
         p          = PRODUCT_MAP["usdt"]
-        amount_wei = MINT_TPLUS_RAW  # 0.1 T+
+        amount_wei = MINT_TPLUS_RAW
         wrap_c     = w3.eth.contract(address=p["wrap"], abi=ERC20_ABI)
         if wrap_c.functions.balanceOf(addr).call() < amount_wei:
             self.log("[BridgeCycle] T+ tidak cukup untuk bridge, skip.", "WARNING")
@@ -1336,7 +1242,7 @@ class OverlayerBot:
         wrap_base_addr = p.get("wrap_base")
         if not wrap_base_addr:
             return None, None, None
-        amount_wei = MINT_TPLUS_RAW  # 0.1 T+
+        amount_wei = MINT_TPLUS_RAW
         wrap_c     = w3_base.eth.contract(address=wrap_base_addr, abi=ERC20_ABI)
         bal        = wrap_c.functions.balanceOf(addr).call()
         if bal < amount_wei:
@@ -1433,7 +1339,6 @@ class OverlayerBot:
             bridged_this_cycle = False
 
             try:
-                # ── Step 1: MINT 0.1 USDT → 0.1 T+  [DIHITUNG ✅] ──────────────────
                 if usdt_bal >= MINT_USDT_RAW and tx_count < target:
                     h, blk, gas = self.do_mint_cycle(w3, addr, pk)
                     tx_count += 1; errors = 0
@@ -1442,7 +1347,6 @@ class OverlayerBot:
                     self.random_delay(5, 12)
                     tplus_bal = tplus_c.functions.balanceOf(addr).call()
 
-                # ── Step 2: STAKE 0.1 T+ → sT+  [DIHITUNG ✅] ──────────────────────
                 if tplus_bal >= MINT_TPLUS_RAW and tx_count < target:
                     h, blk, gas = self.do_stake_cycle(w3, addr, pk, MINT_TPLUS_RAW)
                     tx_count += 1; errors = 0
@@ -1451,7 +1355,6 @@ class OverlayerBot:
                     self.random_delay(5, 12)
                     tplus_bal = tplus_c.functions.balanceOf(addr).call()
 
-                # ── Step 3: BRIDGE 0.1 T+ → Base Sepolia  [DIHITUNG ✅] ─────────────
                 if tplus_bal >= MINT_TPLUS_RAW and tx_count < target:
                     try:
                         h, blk, gas = self.do_bridge_cycle(w3, addr, pk)
@@ -1465,7 +1368,6 @@ class OverlayerBot:
                     except Exception as ex:
                         self.log(f"[BRIDGE] Skipped: {ex}", "WARNING")
 
-                # ── Step 4: UNSTAKE sT+ → T+  [recycle, tidak dihitung] ─────────────
                 try:
                     h, blk, gas = self.do_unstake_cycle(w3, addr, pk)
                     if h:
@@ -1477,7 +1379,6 @@ class OverlayerBot:
                 except Exception as ex:
                     self.log(f"[UNSTAKE] Skipped: {ex}", "WARNING")
 
-                # ── Step 5: REDEEM T+ → USDT  [recycle, tidak dihitung] ─────────────
                 try:
                     tplus_bal = tplus_c.functions.balanceOf(addr).call()
                     if tplus_bal > 0:
@@ -1490,7 +1391,6 @@ class OverlayerBot:
                 except Exception as ex:
                     self.log(f"[REDEEM] Skipped: {ex}", "WARNING")
 
-                # ── Step 6: BRIDGE_BACK T+ Base → ETH  [recycle, tidak dihitung] ────
                 if bridged_this_cycle:
                     try:
                         self.log("[BRIDGE_BACK] Tunggu 30s LayerZero delivery...", "INFO")
@@ -1520,10 +1420,6 @@ class OverlayerBot:
                     pass
 
         return tx_count
-
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── LOADERS ─────────────────────────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
 
     def load_accounts(self, path="accounts.txt"):
         p = Path(path)
@@ -1578,10 +1474,6 @@ class OverlayerBot:
             proxies.append(line)
         return proxies
 
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── run_account ─────────────────────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
-
     def run_account(self, pk, acc_idx, acc_total, all_accounts, send_addresses, proxy=None):
         w3      = self.get_web3(proxy=proxy)
         account = Account.from_key(pk)
@@ -1589,10 +1481,9 @@ class OverlayerBot:
 
         proxy_display = (proxy[:40] + "...") if proxy and len(proxy) > 40 else (proxy or "No Proxy")
         self.log(f"Account #{acc_idx}/{acc_total}", "INFO")
-        self.log(f"Proxy  : {proxy_display}", "INFO")
-        self.log(f"Address: {addr}", "INFO")
+        self.log(f"Proxy: {proxy_display}", "INFO")
+        self.log(f"{addr}", "INFO")
 
-        # Print semua balances
         balances = self.read_all_balances(w3, addr)
         self.print_balances(balances)
 
@@ -1600,7 +1491,6 @@ class OverlayerBot:
             self.log("ETH balance very low! Gas may be insufficient.", "WARNING")
             self.log("Faucet: https://cloud.google.com/application/web3/faucet/ethereum/sepolia", "WARNING")
 
-        # Tampilkan total poin dan status early user
         total_pts = self.fetch_points(addr, pk, proxy=proxy)
         self.log(f"Total Points  : {total_pts:,}", "INFO")
 
@@ -1608,7 +1498,6 @@ class OverlayerBot:
         if eu_status:
             self.log(f"Early User    : {eu_status}", "INFO")
 
-        # Fetch & print tasks
         tasks = self.fetch_tasks(addr, pk, proxy=proxy)
         self.print_tasks(tasks)
 
@@ -1616,22 +1505,24 @@ class OverlayerBot:
             self.log("No tasks to execute today.", "INFO")
             return 0
 
-        # Auto topup
         try:
             self.prepare_materials(w3, addr, pk, tasks)
         except Exception as ex:
             self.log(f"prepare_materials error: {ex}  (continuing)", "WARNING")
         self.random_delay(3, 6)
 
-        # Execute tasks
         total_tx  = 0
         tx_target = 43
 
         for task in tasks:
-            t_type    = task["type"]
+            t_type    = task.get("type", "")
             t_product = task.get("product", "usdt")
-            t_amount  = task["amount"]
-            t_desc    = task["description"]
+            t_amount  = task.get("amount", 0)
+            t_desc    = task.get("description", task.get("title", t_type))
+
+            if not t_type:
+                self.log(f"[SKIP] Task without type field: {task}", "WARNING")
+                continue
 
             self.log(f"Executing: [{t_type.upper()}] {t_desc}", "INFO")
 
@@ -1719,11 +1610,118 @@ class OverlayerBot:
                 self.random_delay(5, 10)
 
         self.log(f"Account done!  Total Tx: {total_tx}  |  {addr[:10]}...", "SUCCESS")
+
+        self.log("Waiting 20s before post-run verification (indexer needs time)...", "INFO")
+        time.sleep(20)
+
+        remaining = self._verify_tasks_after_run(addr, pk, proxy=proxy)
+
+        if remaining:
+            self.log(f"Retrying {len(remaining)} pending task(s) after 3-minute indexer wait...", "WARNING")
+            time.sleep(180)
+
+            remaining2 = self._verify_tasks_after_run(addr, pk, proxy=proxy)
+
+            if remaining2:
+                self.log(f"{len(remaining2)} task(s) still pending — re-executing...", "WARNING")
+                for task in remaining2:
+                    t_type = task.get("type", "")
+                    self.log(f"[RETRY] {t_type} — {task.get('description', '')}", "INFO")
+                    try:
+                        if t_type == "mint":
+                            self.exec_mint(w3, addr, pk, task)
+                        elif t_type == "stake":
+                            self.exec_stake(w3, addr, pk, task)
+                        elif t_type == "unstake":
+                            self.exec_unstake(w3, addr, pk, task)
+                        elif t_type == "redeem":
+                            self.exec_redeem(w3, addr, pk, task)
+                        elif t_type == "bridge":
+                            self.exec_bridge(w3, addr, pk, task)
+                        elif t_type == "transaction":
+                            tx_tgt = task.get("amount", 43)
+                            self.run_cycling(w3, addr, pk, target=tx_tgt, proxy=proxy)
+                        else:
+                            self.log(f"[RETRY] Skipping type={t_type}", "WARNING")
+                        self.random_delay(4, 8)
+                    except Exception as ex:
+                        self.log(f"[RETRY] Error on {t_type}: {ex}", "ERROR")
+
+                self.log("Final verification after retry...", "INFO")
+                time.sleep(20)
+                self._verify_tasks_after_run(addr, pk, proxy=proxy)
+
         return total_tx
 
-    # ════════════════════════════════════════════════════════════════════════
-    # ─── MAIN RUN ─────────────────────────────────────────────────────────────
-    # ════════════════════════════════════════════════════════════════════════
+    def _verify_tasks_after_run(self, address, pk, proxy=None):
+        """
+        Cek ulang semua task dari API setelah bot selesai jalan.
+        Log mana yang sudah completed dan mana yang masih pending.
+        Return: list of pending tasks (for retry logic), or [] if all done.
+        """
+        self.log("── Post-Run Task Verification ────────────────────────────", "INFO")
+        proxies = {"http": proxy, "https": proxy} if proxy else None
+        token   = self.authenticate(address, pk, proxy=proxy)
+        if not token:
+            self.log("Skipping verification — auth failed.", "WARNING")
+            return []
+
+        try:
+            resp = requests.get(
+                f"{API_BASE}/api-s/socials/onchain-tasks",
+                params={"address": address},
+                headers=self._auth_headers(token),
+                proxies=proxies, timeout=15,
+            )
+            resp.raise_for_status()
+            all_tasks = resp.json().get("tasks", [])
+
+            if not all_tasks:
+                self.log("No tasks found in API response.", "WARNING")
+                return []
+
+            completed_tasks = [t for t in all_tasks if t.get("completed", False)]
+            pending_tasks   = [t for t in all_tasks if not t.get("completed", False)]
+
+            self.log(f"Task Status Summary  {len(completed_tasks)} done  |  {len(pending_tasks)} pending", "INFO")
+
+            if completed_tasks:
+                self.log("COMPLETED:", "SUCCESS")
+                for t in completed_tasks:
+                    pts  = t.get("points", 0)
+                    desc = t.get("description", t.get("title", t.get("type", "?")))
+                    self.log(f"   +{pts}pts  {desc}", "SUCCESS")
+
+            if pending_tasks:
+                self.log("STILL PENDING (not yet completed):", "WARNING")
+                for t in pending_tasks:
+                    pts   = t.get("points", 0)
+                    desc  = t.get("description", t.get("title", t.get("type", "?")))
+                    chain = t.get("chain", "?")
+                    ttype = t.get("type",  "?")
+                    self.log(f"   +{pts}pts  [{ttype}]  chain={chain}  {desc}", "WARNING")
+                self.log("NOTE: Backend indexer may need a few minutes to update.", "WARNING")
+            else:
+                self.log("ALL TASKS COMPLETED! Great job!", "SUCCESS")
+
+            try:
+                pts_resp = requests.get(
+                    f"{API_BASE}/api-s/socials/onchain-tasks/points/{address}",
+                    headers=self._auth_headers(token),
+                    proxies=proxies, timeout=10,
+                )
+                pts_resp.raise_for_status()
+                pts_data  = pts_resp.json()
+                total_pts = pts_data.get("totalPoints", pts_data) if isinstance(pts_data, dict) else pts_data
+                self.log(f"Total Points: {total_pts:,}", "INFO")
+            except Exception:
+                pass
+
+            return pending_tasks
+
+        except Exception as ex:
+            self.log(f"Verification error: {ex}", "ERROR")
+            return []
 
     def run(self):
         self.print_banner()
@@ -1740,7 +1738,6 @@ class OverlayerBot:
             "SUCCESS",
         )
 
-        # Print semua contract yang digunakan
         self.log("── Contract Addresses ─────────────────────────────────────", "INFO")
         self.log(f"  [ETH Sepolia]", "INFO")
         self.log(f"  USDT          : {USDT_CONTRACT}", "INFO")
@@ -1784,7 +1781,7 @@ class OverlayerBot:
 
         loop = 1
         while True:
-            self.log(f"Cycle #{loop} Started  |  {len(accounts)} Accounts", "CYCLE")
+            self.log(f"Cycle #{loop} Started", "CYCLE")
             print(f"{Fore.CYAN}------------------------------------------------------------{Style.RESET_ALL}")
 
             success_count = 0
@@ -1815,14 +1812,13 @@ class OverlayerBot:
 
             print(f"{Fore.CYAN}------------------------------------------------------------{Style.RESET_ALL}")
             self.log(
-                f"Cycle #{loop} Complete  |  Accounts: {success_count}/{len(accounts)}  |  Total Tx: {total_tx}",
+                f"Cycle #{loop} Complete | Success: {success_count}/{len(accounts)}",
                 "CYCLE",
             )
             print(f"{Fore.CYAN}============================================================{Style.RESET_ALL}\n")
 
             loop += 1
             self.countdown(86400)
-
 
 if __name__ == "__main__":
     try:
